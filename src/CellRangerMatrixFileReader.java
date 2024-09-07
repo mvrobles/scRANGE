@@ -100,21 +100,44 @@ public class CellRangerMatrixFileReader implements Iterable<CellRangerCount>,Clo
 	
 	private CellRangerCount load (BufferedReader in) throws IOException {
 		String line = in.readLine();
-		//process header
-		while(line!=null && line.charAt(0)=='%') {
+		if(line==null) return null;
+
+		// Caso en que estoy leyendo por primera vez
+		if (line.charAt(0)=='%'){
+			//process header
+			while(line!=null && line.charAt(0)=='%') {
+				line = in.readLine();
+			}
+			if(line==null) return null;
+			String [] vals = line.split(" ");
+			if(numRows==0) {
+				numRows = Integer.parseInt(vals[0]);
+				numCols =  Integer.parseInt(vals[1]);
+				numEntries = Integer.parseInt(vals[2]);
+			}
 			line = in.readLine();
 		}
+		// Ya se leyó la primera línea
 		if(line==null) return null;
 		String [] vals = line.split(" ");
-		if(numRows==0) {
-			numRows = Integer.parseInt(vals[0]);
-			numCols =  Integer.parseInt(vals[1]);
-			numEntries = Integer.parseInt(vals[2]);
-		}
-		line = in.readLine();
-		if(line==null) return null;
-		vals = line.split(" ");
 		return new CellRangerCount(Integer.parseInt(vals[1])-1, Integer.parseInt(vals[0])-1, Integer.parseInt(vals[2]));
+		
+		// String line = in.readLine();
+		// //process header
+		// while(line!=null && line.charAt(0)=='%') {
+		// 	line = in.readLine();
+		// }
+		// if(line==null) return null;
+		// String [] vals = line.split(" ");
+		// if(numRows==0) {
+		// 	numRows = Integer.parseInt(vals[0]);
+		// 	numCols =  Integer.parseInt(vals[1]);
+		// 	numEntries = Integer.parseInt(vals[2]);
+		// }
+		// line = in.readLine();
+		// if(line==null) return null;
+		// vals = line.split(" ");
+		// return new CellRangerCount(Integer.parseInt(vals[1])-1, Integer.parseInt(vals[0])-1, Integer.parseInt(vals[2]));
 	}
 	
 	

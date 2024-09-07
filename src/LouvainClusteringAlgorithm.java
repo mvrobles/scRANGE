@@ -13,7 +13,7 @@ import java.util.Set;
 public class LouvainClusteringAlgorithm implements WeightedGraphClusteringAlgorithm {
 	public List<List<Integer>> clusterNodes(int numVertices, List<WeightedEdge> graph) {
 		List<Map<Integer,WeightedEdge>> adjacencyList = WeightedGraphClusteringAlgorithm.buildAdjacencyList(numVertices, graph);
-		System.out.println("Built adj list with "+adjacencyList.size()+" nodes. Input vertices: "+numVertices);
+		//System.out.println("Built adj list with "+adjacencyList.size()+" nodes. Input vertices: "+numVertices);
 		List<Map<Integer,WeightedEdge>> subgraphAdjacencyList = adjacencyList;
 		List<List<Integer>> answer = new ArrayList<List<Integer>>();
 		int [] clusterMemberships = new int [numVertices];
@@ -26,8 +26,8 @@ public class LouvainClusteringAlgorithm implements WeightedGraphClusteringAlgori
 		}
 
 		while (true) {
-			System.out.print("Número de nodos del subgraph ------ ");
-			System.out.println(subgraphAdjacencyList.size());
+			//System.out.print("Número de nodos del subgraph ------ ");
+			//System.out.println(subgraphAdjacencyList.size());
 		//for (int r=0;r<1;r++) {
 			int n = answer.size();
 			int [] subgraphClusterMemberships = new int [n];
@@ -40,7 +40,7 @@ public class LouvainClusteringAlgorithm implements WeightedGraphClusteringAlgori
 			boolean changed = false;
 			while(true) {
 				Collections.shuffle(indexes);
-				System.out.println("Shuffled indexes. Nodes: "+indexes.size());
+				//System.out.println("Shuffled indexes. Nodes: "+indexes.size());
 				boolean changedRound = false;
 				for(int i:indexes) {
 					int currentCluster = subgraphClusterMemberships[i];
@@ -114,7 +114,7 @@ public class LouvainClusteringAlgorithm implements WeightedGraphClusteringAlgori
 				tried.add(cJ);
 			}
 		}
-		if(bestModularityChange>0) System.out.println("Node "+i+" current: "+cI+" new: "+bestCluster+" mod change: "+bestModularityChange);
+		//if(bestModularityChange>0) System.out.println("Node "+i+" current: "+cI+" new: "+bestCluster+" mod change: "+bestModularityChange);
 		return bestCluster;
 	}
 
@@ -167,7 +167,7 @@ public class LouvainClusteringAlgorithm implements WeightedGraphClusteringAlgori
 					subgraphEdge.addWeight(edge.getWeight());
 			}
 		}
-		printGraphWeights(answer);
+		//printGraphWeights(answer);
 
 		return answer;
 	}

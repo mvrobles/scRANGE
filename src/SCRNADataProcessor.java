@@ -23,6 +23,7 @@ public class SCRNADataProcessor {
 	private void processCellRangerMatrix(String directory, String outPrefix) throws IOException {
 		System.out.println("Loading cellRanger dataset");
 		ScRNAMatrix matrix = loadCellRangerMatrix(directory);
+
 		System.out.println("Loaded matrix");
 		File theDir = new File(outPrefix);
 		if (!theDir.exists()){
@@ -46,6 +47,8 @@ public class SCRNADataProcessor {
 				countList.add(count.getCellIdx());
 				countList.add(count.getGeneIdx());
 				countList.add((int) count.getCount());
+
+				System.out.println(String.valueOf(count.getCellIdx()) + " " + String.valueOf(count.getGeneIdx()) + " " + String.valueOf(count.getCount()));
 				counts.add(countList);
 			}
 		}	
@@ -74,9 +77,28 @@ public class SCRNADataProcessor {
 		
 	// }
 
+	private void saveMatrixToTSV(double[][] matrix, String fileName) throws IOException {
+		try{
+			PrintStream out = new PrintStream(fileName);
+			for (double[] row : matrix) {
+				for (double value : row) {
+					out.print(value + "\t");
+				}
+				out.println();
+			}
+			
+		}
+		catch (Exception e) {
+			// TODO: handle exception
+		}
+	}
+
 	public void processMatrix(ScRNAMatrix matrix, String outPrefix) throws IOException {
 		long time0 = System.currentTimeMillis();
+		String tsvFilename = outPrefix + "unnormalized_matrix.tsv";
+		saveMatrixToTSV(matrix.toMatrix(), tsvFilename);
 		matrix.filterGenes();
+		
 		matrix.filterCells();
 		long time1 = System.currentTimeMillis();
 		System.out.println("Calculating matrix. Loading time: "+((time1-time0)/1000));
@@ -88,6 +110,8 @@ public class SCRNADataProcessor {
 		//System.out.println("Matriz normalizada");
 		//matrix = new ScRNAMatrix(matrix.getCellIds(), matrix.getGeneIds(), normalizedMatrix); // Out of memory
 		matrix.updateValues(matrix.normalizeMatrix(matrix.toMatrix()));
+		tsvFilename = outPrefix + "_matrix.tsv";
+		saveMatrixToTSV(matrix.toMatrix(), tsvFilename);
 
 		time1 = System.currentTimeMillis();
 

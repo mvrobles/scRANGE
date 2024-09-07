@@ -1,4 +1,4 @@
 revision/*
 **.DS_Store
 results/*
-data/*
+*data/*

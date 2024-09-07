@@ -136,6 +136,10 @@ public class ScRNAMatrix {
 		return countsByCell;
 	}
 
+	public List<Map<Integer, Double>> getCountsByGene(){
+		return countsByGene;
+	}
+
 	public Map<Integer,Double> getCountsCell(int cellIdx, int minValue) {
 		Map<Integer,Double> answer = new TreeMap<Integer, Double>();
 		for(Map.Entry<Integer,Double> entry:countsByCell.get(cellIdx).entrySet()) {
@@ -152,14 +156,18 @@ public class ScRNAMatrix {
 		Set<Integer> idxsToRemove = new HashSet<Integer>();
 		for(int j=0;j<countsByGene.size();j++) {
 			Map<Integer,Double> countsGene= countsByGene.get(j);
-			if(countsGene.size()<10) {
-				//System.out.println("Removing gene: "+j+" counts: "+countsGene.size());
+			if(countsGene.size()<1) {
+				System.out.println("Removing gene: "+j+" counts: "+countsGene.size());
+				System.out.println(countsGene);
 				idxsToRemove.add(j);
+			}
+			else if (countsGene.size()>10 & countsGene.size()<20){ 
+				//System.out.println("GENE "+j);
+				//System.out.println(countsGene);
 			}
 		}
 		removeGenes(idxsToRemove);
 		System.out.println("Remaining genes: "+countsByGene.size()+" removed: "+idxsToRemove.size());
-		
 	}
 
 	private void removeGenes(Set<Integer> idxsToRemove) {
@@ -190,7 +198,7 @@ public class ScRNAMatrix {
 		Set<Integer> idxsToRemove = new HashSet<Integer>();
 		for(int i=0;i<countsByCell.size();i++) {
 			Map<Integer,Double> countsCell = countsByCell.get(i);
-			if(countsCell.size()<50) {
+			if(countsCell.size()<1) {
 				System.out.println("Removing cell: "+i +" count: "+countsCell.size());
 				idxsToRemove.add(i);
 			}
