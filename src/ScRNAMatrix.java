@@ -47,10 +47,9 @@ public class ScRNAMatrix {
         }
 
 		ScRNAMatrix instance = new ScRNAMatrix(cellIds, geneIds, counts);
-		double[][] matrix = instance.toMatrix();
 
-		double[][] matrixNorm = instance.normalizeMatrix(matrix);
-		instance.printMatrix(matrixNorm);
+		instance.normalize();
+		instance.printMatrix(instance.toMatrix());
 	}
 
 	public void printMatrix(double[][] matrixNorm) {
@@ -157,8 +156,6 @@ public class ScRNAMatrix {
 		for(int j=0;j<countsByGene.size();j++) {
 			Map<Integer,Double> countsGene= countsByGene.get(j);
 			if(countsGene.size()<1) {
-				System.out.println("Removing gene: "+j+" counts: "+countsGene.size());
-				System.out.println(countsGene);
 				idxsToRemove.add(j);
 			}
 			else if (countsGene.size()>10 & countsGene.size()<20){ 
@@ -236,8 +233,12 @@ public class ScRNAMatrix {
         double[][] matrix = new double[numCells][numGenes];
 
         for (int i = 0; i < numCells; i++) {
+
             Map<Integer, Double> counts = countsByCell.get(i);
             for (Map.Entry<Integer, Double> entry : counts.entrySet()) {
+				if (i == 0 && entry.getKey() == 2) {
+					System.out.println("i: " + i + " key: " + entry.getKey() + " value: " + entry.getValue());
+				}
                 int geneIndex = entry.getKey();
                 double count = entry.getValue();
                 matrix[i][geneIndex] = count;
@@ -245,6 +246,17 @@ public class ScRNAMatrix {
         }
         return matrix;
     }
+
+	private double[] getTotalSumByCell() {
+		double[] totalSum = new double[countsByCell.size()];
+		for (int i = 0; i < countsByCell.size(); i++){
+			Map<Integer, Double> counts = countsByCell.get(i);
+			for (Map.Entry<Integer, Double> entry : counts.entrySet()){
+				totalSum[i] += entry.getValue();
+			}
+		}
+		return totalSum;
+	}
 
 	public double computeMedian(double[] array){
 		double[] copyArray = array.clone();
@@ -259,81 +271,18 @@ public class ScRNAMatrix {
 		return median;
 	}
 
-	public double[][] computeMeanStdByRow(double[][] matrix){
-		int numRows = matrix.length; 
-		int numCols = matrix[0].length;
-
-		double[] variance = new double[numRows];
-		double[] mean = new double[numRows];
-		double[] std = new double[numRows];
-
-		for (int i = 0; i < numRows; i++) {
-			for (int j = 0; j < numCols; j++) {
-				mean[i] += matrix[i][j];
-			}			
-			mean[i] /= numCols;
-
-			for (int j = 0; j < numCols; j++) {
-				variance[i] += Math.pow(matrix[i][j] - mean[i], 2);
-			}
-			variance[i] /= numCols;
-
-			std[i] = Math.sqrt(variance[i]);
-		}
-
-		double[][] meanStd = new double [2][numRows];
-		meanStd[0] = mean;
-		meanStd[1] = std;
-
-		return meanStd;
-	}
-
-	public double[][] normalizeMatrix(double[][] matrix){
-		int numRows = matrix.length; 
-		int numCols = matrix[0].length;
-
-		// Calcular la suma por columna (células)
-		double[] totalSum = new double[numCols];
-
-        for (int col = 0; col < numCols; col++) {
-            for (int row = 0; row < numRows; row++) {
-                totalSum[col] += matrix[row][col];
-            }
-        }
+	public void normalize(){
+		double[] totalSum = getTotalSumByCell();
 		double median = computeMedian(totalSum);
 
-		System.out.println("Calculó la mediana");
-		// Todos los conteos por columnas (células) quedan igual
-		//double[][] matrixNew = new double[numRows][numCols];
-        for (int col = 0; col < numCols; col++) {
-            double scalingFactor = median / totalSum[col];
-            for (int row = 0; row < numRows; row++) {
-                matrix[row][col] = matrix[row][col] * scalingFactor;
-                //matrixNew[row][col] = matrix[row][col] * scalingFactor;
-            }
-        }
-
-		System.out.println("Calculó la matrixNew");
-		
-		// Logaritmo (x+1)
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numCols; j++) {
-                //matrixNew[i][j] = Math.log1p(matrixNew[i][j]);
-				matrix[i][j] = Math.log1p(matrix[i][j]);
-            }
-        }
-
-		// Normalización por filas (genes)
-		// double[][] meanStd =  computeMeanStdByRow(matrixNew);
-		// double[] mean = meanStd[0];
-		// double[] std = meanStd[1];
-
-		// for (int i = 0; i < numRows; i++) {
-        //     for (int j = 0; j < numCols; j++) {
-        //         matrixNew[i][j] = (matrixNew[i][j] - mean[i]) / std[i];
-        //     }
-        // }
-
-		return matrix;
+		for (int i = 0; i < countsByCell.size(); i++){
+			Map<Integer, Double> counts = countsByCell.get(i);
+			for (Map.Entry<Integer, Double> entry : counts.entrySet()){
+				int geneIndex = entry.getKey();
+				double count = entry.getValue();
+				count = Math.log1p(count * (median / totalSum[i]));
+				counts.put(geneIndex, count);
+			}
+		}
 	}
 }

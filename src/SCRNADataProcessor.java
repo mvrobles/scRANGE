@@ -48,7 +48,6 @@ public class SCRNADataProcessor {
 				countList.add(count.getGeneIdx());
 				countList.add((int) count.getCount());
 
-				System.out.println(String.valueOf(count.getCellIdx()) + " " + String.valueOf(count.getGeneIdx()) + " " + String.valueOf(count.getCount()));
 				counts.add(countList);
 			}
 		}	
@@ -104,12 +103,8 @@ public class SCRNADataProcessor {
 		System.out.println("Calculating matrix. Loading time: "+((time1-time0)/1000));
 		
 		time0 = System.currentTimeMillis();
-		//double[][] completeMatrix = matrix.toMatrix(matrix.getCellIds(), matrix.getGeneIds(), matrix.getCountsByCell());
-		//System.out.println("Matriz completa");
-		//completeMatrix = matrix.normalizeMatrix(completeMatrix);
-		//System.out.println("Matriz normalizada");
-		//matrix = new ScRNAMatrix(matrix.getCellIds(), matrix.getGeneIds(), normalizedMatrix); // Out of memory
-		matrix.updateValues(matrix.normalizeMatrix(matrix.toMatrix()));
+
+		matrix.normalize();
 		tsvFilename = outPrefix + "_matrix.tsv";
 		saveMatrixToTSV(matrix.toMatrix(), tsvFilename);
 
