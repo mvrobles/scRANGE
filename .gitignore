@@ -2,3 +2,4 @@ revision/*
 **.DS_Store
 results/*
 *data/*
+*.pyc
