@@ -41,7 +41,7 @@ def normalize(adata, filter_min_counts=True, logtrans_input=True):
     sc.pp.normalize_per_cell(adata)
 
     if logtrans_input:
-        sc.pp.log1p(adata)
+        sc.pp.log1p(adata) 
 
     zero_percentage = np.where(adata.X==0,True,False).sum()/(adata.X.shape[0]*adata.X.shape[1])
     print('Cero percentage', zero_percentage)
@@ -113,17 +113,16 @@ def create_kmst(distance_matrix, inverse = True, k = None, threshold = 1e-5):
     print(f'---> Number of edges: {grafo.number_of_edges()}')
 
     mst_antes = None
-    # Creamos los MSTs
-    for _ in tqdm(range(k)):
+    for iter in tqdm(range(k)):
         mst_new = nx.minimum_spanning_tree(grafo)
 
         edges_to_remove = list(mst_new.edges)
         grafo.remove_edges_from(edges_to_remove)
 
         if mst_antes is None:
-            mst_antes = mst_new.copy()
+            mst_antes =mst_new.copy()
         else:
-            mst_new.add_edges_from(list(mst_antes.edges()))
+            mst_new.add_edges_from(list(mst_antes.edges(data=True)))
             mst_antes = mst_new.copy()
 
     return mst_antes 
