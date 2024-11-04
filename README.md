@@ -47,5 +47,7 @@ The epilepsy dataset and the simulations made with the Symsim tool [2] can be fo
 ## References
 [1] Tian, T., Zhang, J., Lin, X., Wei, Z., Hakonarson, H.: Model-based deep embedding for constrained clustering analysis of single cell rna-seq data (2021) https: //doi.org/10.1038/s41467-021-22008-3 
 
+[2] Qin, F., Luo, X., Xiao, F., Cai, G.: Scrip: An accurate simulator for single-cell rna sequencing data. Bioinformatics 38, 1304–1311 (2022) https://doi.org/10.1093/bioinformatics/btab824
+
 ## Contact
 Melissa Robles mv.robles@uniandes.edu.co
