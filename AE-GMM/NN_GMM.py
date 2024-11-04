@@ -297,5 +297,9 @@ class AEGMM(nn.Module):
                 z, meanbatch, dispbatch, pibatch, prob_matrixbatch = self.forward(inputs) 
                 results_encoder = {'mean': meanbatch, 'sigma': dispbatch, 'pi': pibatch}
                 pickle.dump(results_encoder, handle)
+        
+        inputs = Variable(X)
+        z, _, _, _, _ = self.forward(inputs)
+        distr = self.find_probabilities(z).data.cpu().numpy()
 
-        return self.y_pred, self.mu, self.pi, self.diag_cov, z, epoch, losses
+        return self.y_pred, distr, self.mu, self.pi, self.diag_cov, z, epoch, losses

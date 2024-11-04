@@ -13,7 +13,7 @@ Following the methodology of scDCC [1], the training of the network is performed
 ## Usage
 ### k-MST
 ```
-python kMST/kMST.py <path_input> <path_output> <filter>
+python kMST.py <path_input> <path_output> <filter>
 ```
 
 - `path_input`: Must be a folder with the scRNA-seq experiment containing a `matrix.mtx` file, a `barcodes.tsv` with the cell information and a `genes.tsv` with the gene information. 
@@ -23,17 +23,26 @@ python kMST/kMST.py <path_input> <path_output> <filter>
     2. `"variance"`: Select the 5000 genes with higher variance.
     3. `""`: No gene selection. 
 
+Example:
+```
+python kMST.py "../Data/Simulated/symsim_500_1500_3_0.01_1000/" "../results/symsim_kmst/" "mean-variance"
+```
+
 ### AE-GMM
 ```
-python AE-GMM/NN_run_GMM.py <path_input> <path_output> <n_clusters>
+python NN_run_GMM.py <path_input> <path_output> <n_clusters>
 ```
 - `path_input`: Must be a folder with the scRNA-seq experiment containing a `matrix.mtx` file, a `barcodes.tsv` with the cell information and a `genes.tsv` with the gene information. 
 - `path_output`: Must be a folder. The results will be saved here.
 - `n_clusters`: Integer with the number of clusters to be created. 
 
+Example:
+```
+python NN_run_GMM.py "../Data/Simulated/symsim_500_1500_3_0.01_1000/" "../results/symsim_aegmm/" 3
+```
 
 ## Data Availability
-The epilepsy dataset can be found in the `Data` folder with the assignment of the filtered dataset.
+The epilepsy dataset and the simulations made with the Symsim tool [2] can be found in the `Data` folder.
 
 ## References
 [1] Tian, T., Zhang, J., Lin, X., Wei, Z., Hakonarson, H.: Model-based deep embedding for constrained clustering analysis of single cell rna-seq data (2021) https: //doi.org/10.1038/s41467-021-22008-3 

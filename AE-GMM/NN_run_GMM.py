@@ -1,8 +1,9 @@
-import sys
 import argparse
 import os
+import sys
 import warnings
 from time import time
+
 import numpy as np
 import pandas as pd
 import scanpy as sc
@@ -82,7 +83,7 @@ def unsupervised_metrics(X, y_pred):
     dbs = np.round(davies_bouldin_score(X, y_pred), 5)
     print('Evaluating cells: SIL= %.4f, CHS= %.4f, DBS= %.4f' % (sil, chs, dbs))
 
-def run_GMM(X: np.array, 
+def run_gmm(X: np.array, 
             barcodes: pd.DataFrame,
             path_results: str, 
             n_clusters: int):
@@ -136,3 +137,8 @@ if __name__ == "__main__":
 
     if not os.path.exists(args.path_results):
         os.makedirs(args.path_results)
+
+    run_gmm(X = X, 
+            barcodes = barcodes,
+            path_results = args.path_results,
+            n_clusters = args.n_clusters)
