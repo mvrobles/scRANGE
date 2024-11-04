@@ -4,7 +4,6 @@ import torch.nn.functional as F
 import numpy as np
 from scipy.stats import multivariate_normal
 
-
 class ZINBLoss(nn.Module):
     def __init__(self):
         super(ZINBLoss, self).__init__()
@@ -35,12 +34,6 @@ class ClusteringLoss(nn.Module):
         super(ClusteringLoss, self).__init__()
 
     def forward(self, probMatrix):
-        """
-        Args: 
-           TODO
-        Returns:
-            GMM loss
-        """
         rta = -(torch.log(probMatrix.sum(1)).sum())/1000
         return rta
 

@@ -14,14 +14,7 @@ from torch.autograd import Variable
 from torch.nn import Parameter
 from torch.utils.data import DataLoader, TensorDataset
 
-from .layers import ClusteringLoss, DispAct, MeanAct, ZINBLoss
-
-#import sys
-#sys.path.append('../')
-
-from .utils import *
-
-torch.manual_seed(345)
+from layers import ClusteringLoss, DispAct, MeanAct, ZINBLoss
 
 def buildNetwork(layers, type, activation="relu"):
     net = []
@@ -34,10 +27,11 @@ def buildNetwork(layers, type, activation="relu"):
     return nn.Sequential(*net)
 
 
-class scGMM(nn.Module):
+class AEGMM(nn.Module):
     def __init__(self, input_dim, z_dim, n_clusters, path, encodeLayer=[], decodeLayer=[], 
-            activation="relu", sigma=1., alpha=1., ml_weight=1., cl_weight=1.):
-        super(scGMM, self).__init__()
+            activation="relu", sigma=1., alpha=1., ml_weight=1., cl_weight=1., seed = 345):
+        torch.manual_seed(seed)
+        super(AEGMM, self).__init__()
         
         # Inicialización de valores para el autoencoder
         self.z_dim = z_dim
@@ -60,9 +54,9 @@ class scGMM(nn.Module):
         self.diag_cov = Parameter(torch.ones(n_clusters, z_dim, dtype=torch.float32))
 
         # Funciones auxiliares: cálculo del ZINB loss, Softmax y Clustering Loss
-        self.zinb_loss = ZINBLoss()#.cuda()
+        self.zinb_loss = ZINBLoss().cuda()
         self.softmax = nn.Softmax(dim=1)
-        self.clustering_loss = ClusteringLoss()#.cuda()
+        self.clustering_loss = ClusteringLoss().cuda()
 
         # Se guardan las covarianzas
         self.cov = torch.Tensor([np.identity(self.z_dim)]*self.n_clusters)
@@ -107,10 +101,7 @@ class scGMM(nn.Module):
         """
         Encuentra las probabilidades de cada punto a cada cluster a partir de las medias y las covarianzas.
         """
-        #try: proba = torch.distributions.MultivariateNormal(self.mu.cuda(), self.cov.cuda()).log_prob(Z.cuda().unsqueeze(1))
-        try: proba = torch.distributions.MultivariateNormal(self.mu, self.cov).log_prob(Z.unsqueeze(1))
-        
-        except: breakpoint()
+        proba = torch.distributions.MultivariateNormal(self.mu.cuda(), self.cov.cuda()).log_prob(Z.cuda().unsqueeze(1))
 
         # Se resta el maximo número (en logaritmo)
         maximum = torch.max(proba,dim=1)[0]
@@ -160,8 +151,11 @@ class scGMM(nn.Module):
         
         return cov_mats
 
+    def save_checkpoint(self, state, index, filename):
+        newfilename = os.path.join(filename, 'FTcheckpoint_%d.pth.tar' % index)
+        torch.save(state, newfilename)
 
-    def pretrain_autoencoder(self, x, X_raw, size_factor, batch_size=256, lr=0.001, epochs=400): # CAMBIAR POR 0.0001
+    def pretrain_autoencoder(self, x, X_raw, size_factor, batch_size=256, lr=0.0001, epochs=400): # CAMBIAR POR 0.0001
         use_cuda = torch.cuda.is_available()
         if use_cuda:
             self.cuda()
@@ -172,9 +166,9 @@ class scGMM(nn.Module):
         loss_s = []
         for epoch in range(epochs):
             for batch_idx, (x_batch, x_raw_batch, sf_batch) in enumerate(dataloader):
-                x_tensor = Variable(x_batch)#.cuda()
-                x_raw_tensor = Variable(x_raw_batch)#.cuda()
-                sf_tensor = Variable(sf_batch)#.cuda()
+                x_tensor = Variable(x_batch).cuda()
+                x_raw_tensor = Variable(x_raw_batch).cuda()
+                sf_tensor = Variable(sf_batch).cuda()
                 _, mean_tensor, disp_tensor, pi_tensor, _ = self.forward(x_tensor)
                 loss = self.zinb_loss(x=x_raw_tensor, mean=mean_tensor, disp=disp_tensor, pi=pi_tensor, scale_factor=sf_tensor)
                 
@@ -184,26 +178,34 @@ class scGMM(nn.Module):
                 
                 print('Pretrain epoch [{}/{}], ZINB loss:{:.4f}'.format(batch_idx+1, epoch+1, loss.item()))
                 loss_s.append(loss.item())
+            
+            with open(self.path + '/pretrain_loss.pickle', 'wb') as handle:
+                pickle.dump(loss_s, handle)
+
+        # Save the pretrained model 
+        f = open(self.path + f'pretrained_model_with_{epoch}_epochs.pickle', 'wb')
+        pickle.dump(self, f)
+        f.close 
+
+    def save_checkpoint(self, state, index, filename):
+        newfilename = os.path.join(filename, 'FTcheckpoint_%d.pth.tar' % index)
+        torch.save(state, newfilename)
 
     def fit(self, X, X_raw, sf, lr=0.1, batch_size=256, num_epochs=10, update_interval=1, tol=1e-4, y = None):
         '''X: tensor data'''
-        #patience = 10
-        #patience_counter = 0
-        #best_loss = float('inf')
-        
         use_cuda = torch.cuda.is_available()
         if use_cuda:
             self.cuda()
 
         save_dir = self.path +'/'
         print("Clustering stage")
-        X = torch.tensor(X)#.cuda()
-        X_raw = torch.tensor(X_raw)#.cuda()
-        sf = torch.tensor(sf)#.cuda()
+        X = torch.tensor(X).cuda()
+        X_raw = torch.tensor(X_raw).cuda()
+        sf = torch.tensor(sf).cuda()
         
         diag = torch.where(self.diag_cov.double() <= 0, 1/2100, self.diag_cov.double())
         x = [torch.diag(diag.detach()[i]) for i in range(self.n_clusters)]
-        self.cov = torch.stack(x)#.cuda()
+        self.cov = torch.stack(x).cuda()
 
         optimizer = optim.Adadelta(filter(lambda p: p.requires_grad, self.parameters()), lr=lr, rho=.95)
 
@@ -219,8 +221,6 @@ class scGMM(nn.Module):
         self.train()
         num = X.shape[0]
         num_batch = int(math.ceil(1.0*X.shape[0]/batch_size))
-
-        clustering_metrics = {'ac': [], 'nmi': [], 'ari': []}
         losses = {'zinb': [], 'gmm': []}
         
         for epoch in range(num_epochs):
@@ -233,13 +233,21 @@ class scGMM(nn.Module):
 
                 diag = torch.where(self.diag_cov.double() <= 0, 1/2100, self.diag_cov.double())
                 x = [torch.diag(diag.detach()[i]) for i in range(self.n_clusters)]
-                self.cov = torch.stack(x)#.cuda() 
+                self.cov = torch.stack(x).cuda() 
 
                 distr = self.find_probabilities(z)
                 self.y_pred = torch.argmax(distr.clone().detach() , dim=1).data.cpu().numpy()
 
-                # check stop criterion
-                delta_label = np.sum(self.y_pred != self.y_pred_last).astype(np.float32) / num
+                # save current model
+                if epoch%50 == 0:
+                    self.save_checkpoint({'epoch': epoch+1,
+                            'state_dict': self.state_dict(),
+                            'mu': self.mu,
+                            'y_pred': self.y_pred,
+                            'z': z,
+                            'pi': self.pi,
+                            'cov': self.cov,
+                            }, epoch+1, filename=save_dir)
                     
                 self.y_pred_last = self.y_pred
             
@@ -258,9 +266,9 @@ class scGMM(nn.Module):
                 sfinputs = Variable(sfbatch)
 
                 diag = torch.where(self.diag_cov.double() <= 0, 1/2100, self.diag_cov.double())
-                self.cov = torch.stack([torch.diag(diag.detach()[i]) for i in range(self.n_clusters)])#.cuda()
+                self.cov = torch.stack([torch.diag(diag.detach()[i]) for i in range(self.n_clusters)]).cuda()
 
-                z, meanbatch, dispbatch, pibatch, prob_matrixbatch = self.forward(inputs)
+                z, meanbatch, dispbatch, pibatch, prob_matrixbatch = self.forward(inputs) 
 
                 cluster_loss = self.clustering_loss(prob_matrixbatch)
                 recon_loss = self.zinb_loss(rawinputs, meanbatch, dispbatch, pibatch, sfinputs)
@@ -269,8 +277,6 @@ class scGMM(nn.Module):
                 
                 optimizer.zero_grad()
                 loss.backward()
-                # torch.nn.utils.clip_grad_value_(self.parameters(), 0)
-
                 optimizer.step()
 
                 cluster_loss_val += cluster_loss * len(inputs)
@@ -283,8 +289,13 @@ class scGMM(nn.Module):
             losses['zinb'].append(recon_loss_val / num)
             losses['gmm'].append(cluster_loss_val / num)
 
-        inputs = Variable(X)
-        z, _, _, _, _ = self.forward(inputs)
-        distr = self.find_probabilities(z).data.cpu().numpy()
+            with open(self.path + '/losses.pickle', 'wb') as handle:
+                pickle.dump( losses, handle)
+                
+            with open(self.path + '/decoder_info.pickle', 'wb') as handle:
+                inputs = Variable(X)
+                z, meanbatch, dispbatch, pibatch, prob_matrixbatch = self.forward(inputs) 
+                results_encoder = {'mean': meanbatch, 'sigma': dispbatch, 'pi': pibatch}
+                pickle.dump(results_encoder, handle)
 
-        return self.y_pred, distr, self.mu, self.pi, self.diag_cov, z, epoch, clustering_metrics, losses
+        return self.y_pred, self.mu, self.pi, self.diag_cov, z, epoch, losses

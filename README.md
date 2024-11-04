@@ -3,12 +3,12 @@ The identification of cell types is a basic step of the pipeline for Single-Cell
 
 ## Algorithms
 ### k-MST
-![k-MST Algorithm](diagrams/k-MST.png)
+![k-MST Algorithm](Diagrams/k-MST.png)
 Graph-based scRNA-seq clustering pipeline. a) Perform single-cell RNA sequencing. b) Generate the count matrix. c) Gene filtering: Retain only the 5000 genes with the highest upward deviation from the adjusted variance. d) Compute the pairwise Pearson correlation between cells. e) Compute the k-MST graph f) Apply the Louvain algorithm for community detection.
 
 ### AE-GMM
-![AE-GMM Algorithm](diagrams/architecture_AEGMM.png)
-Following the methodology of scDCC [1], the training of the network is performed in two stages. First, the autoencoder is pretrained with the $L_ZINB$ loss function. Then, a fine-tuning stage is performed in which the latent representation is optimized, guided by the GMM loss function. The model learns the parameters of each Gaussian function at this stage to perform probabilistic clustering. Specifically, it learns three parameters: $\pi_c \in \mathbb{R}$, $\mu_c \in \mathbb{R}^{32}$, and $\Sigma_c \in \mathbb{R}^{32×32}$ for each cluster $c$. The value of $\mu_c$ represents the mean of the cluster $c$. These mean values are initialized as the centroids found by the k-Means algorithm. For each cluster $c$, $\Sigma_c$ represents the covariance matrix of c and πc represents its weight, which can be understood as the prior probability that a cell is assigned to such cluster. 
+![AE-GMM Algorithm](Diagrams/architecture_AEGMM.png)
+Following the methodology of scDCC [1], the training of the network is performed in two stages. First, the autoencoder is pretrained with the $\mathcal{L}_{ZINB}$ loss function. Then, a fine-tuning stage is performed in which the latent representation is optimized, guided by the GMM loss function. The model learns the parameters of each Gaussian function at this stage to perform probabilistic clustering. Specifically, it learns three parameters: $\pi_c \in \mathbb{R}$, $\mu_c \in \mathbb{R}^{32}$, and $\Sigma_c \in \mathbb{R}^{32×32}$ for each cluster $c$. The value of $\mu_c$ represents the mean of the cluster $c$. These mean values are initialized as the centroids found by the k-Means algorithm. For each cluster $c$, $\Sigma_c$ represents the covariance matrix of c and πc represents its weight, which can be understood as the prior probability that a cell is assigned to such cluster. 
 
 ## Usage
 ### k-MST
@@ -24,10 +24,16 @@ python kMST/kMST.py <path_input> <path_output> <filter>
     3. `""`: No gene selection. 
 
 ### AE-GMM
+```
+python AE-GMM/NN_run_GMM.py <path_input> <path_output> <n_clusters>
+```
+- `path_input`: Must be a folder with the scRNA-seq experiment containing a `matrix.mtx` file, a `barcodes.tsv` with the cell information and a `genes.tsv` with the gene information. 
+- `path_output`: Must be a folder. The results will be saved here.
+- `n_clusters`: Integer with the number of clusters to be created. 
 
 
-
-
+## Data Availability
+The epilepsy dataset can be found in the `Data` folder with the assignment of the filtered dataset.
 
 ## References
 [1] Tian, T., Zhang, J., Lin, X., Wei, Z., Hakonarson, H.: Model-based deep embedding for constrained clustering analysis of single cell rna-seq data (2021) https: //doi.org/10.1038/s41467-021-22008-3 

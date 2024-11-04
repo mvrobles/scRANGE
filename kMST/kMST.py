@@ -13,7 +13,9 @@ from scipy.optimize import curve_fit
 from tqdm import tqdm
 import os 
 
-from read_data import *
+import sys
+sys.path.append('../')
+from utils.read_data import get_paths, read_data_scexperiment
 
 warnings.filterwarnings('ignore')
 

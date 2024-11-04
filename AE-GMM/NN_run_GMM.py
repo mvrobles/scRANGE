@@ -1,26 +1,22 @@
+import sys
 import argparse
 import os
-import pickle
 import warnings
 from time import time
-
-import h5py
 import numpy as np
 import pandas as pd
 import scanpy as sc
 import torch
 import torch.nn.functional as F
 from sklearn import metrics
-from sklearn.cluster import Birch
 from sklearn.metrics import (calinski_harabasz_score, davies_bouldin_score,
                              silhouette_score)
 
-from .NN_GMM import scGMM
+from NN_GMM import AEGMM
+from preprocess import normalize
 
-import sys
 sys.path.append('../')
-
-from .preprocess import normalize, read_dataset
+from utils.read_data import get_paths, read_data_scexperiment
 
 warnings.filterwarnings('ignore')
 
@@ -47,12 +43,10 @@ def create_train_model(params, adata, n_clusters):
     if not os.path.exists(params['path_results']):
         os.makedirs(params['path_results'])
 
-    sd = 2.5
-
     # Model
-    model = scGMM(input_dim=adata.n_vars, z_dim=32, n_clusters=n_clusters, 
-                encodeLayer=[256, 64], decodeLayer=[64, 256], sigma=sd,
-                path = params['path_results'])#.cuda()
+    model = AEGMM(input_dim=adata.n_vars, z_dim=32, n_clusters=n_clusters, 
+                encodeLayer=[256, 64], decodeLayer=[64, 256], sigma=2.5,
+                path = params['path_results']).cuda()
 
     print(str(model))
 
@@ -69,15 +63,12 @@ def second_training(params, model, adata):
     t0 = time()
     
     # Second training: clustering loss + ZINB loss
-    y_pred,  distr, mu, pi, cov, z, epochs, clustering_metrics, losses = model.fit(X=adata.X, X_raw=adata.raw.X, 
+    y_pred,  distr, mu, pi, cov, z, epochs, losses = model.fit(X=adata.X, X_raw=adata.raw.X, 
                                     sf=adata.obs.size_factors, batch_size=params['batch_size'],  num_epochs=params['maxiter'],
                                     update_interval=params['update_interval'], tol=params['tol'], lr = 0.001, y = None)
 
     # Se guardan los resultados
     pd.DataFrame(z.cpu().detach().numpy()).to_csv(params['path_results'] + 'Z.csv', index = None)
-    pd.DataFrame(mu.cpu().detach().numpy()).to_csv(params['path_results']  + 'Mu.csv', index = None)
-    pd.DataFrame(pi.cpu().detach().numpy()).to_csv(params['path_results']  + 'Pi.csv', index = None)
-    pd.DataFrame(cov.cpu().detach().numpy()).to_csv(params['path_results'] + 'DiagCov.csv', index = None)
 
     print('Time: %d seconds.' % int(time() - t0))
 
@@ -131,3 +122,17 @@ def run_GMM(X: np.array,
     distr = distr / distr.sum(axis=1, keepdims=True)
     
     return barcodes, distr
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path_input")
+    parser.add_argument("path_results")
+    parser.add_argument("n_clusters")
+
+    args = parser.parse_args()
+
+    path_mtx, path_barcodes, path_features = get_paths(args.path_input)
+    barcodes, genes, X = read_data_scexperiment(path_mtx, path_barcodes, path_features)
+
+    if not os.path.exists(args.path_results):
+        os.makedirs(args.path_results)
