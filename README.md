@@ -41,6 +41,8 @@ Example:
 python NN_run_GMM.py "../Data/Simulated/symsim_500_1500_3_0.01_1000/" "../results/symsim_aegmm/" 3
 ```
 
+Each methodology contains the respective `environment.yaml` file for reference. 
+
 ## Data Availability
 The epilepsy dataset and the simulations made with the Symsim tool [2] can be found in the `Data` folder.
 
