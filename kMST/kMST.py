@@ -184,7 +184,7 @@ def run_kmst(X: np.array,
     elif filter == 'variance':
         X = filter_genes_variance(X)
     
-    print(f"Dimensions: {anndata_p.X.shape}")
+    print(f"Dimensions: {X.shape}")
 
     # Correlations
     correlaciones = get_correlations(X)
