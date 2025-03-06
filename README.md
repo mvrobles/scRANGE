@@ -12,6 +12,18 @@ Following the methodology of scDCC [1], the training of the network is performed
 
 ## Usage
 ### k-MST
+To run the kMST algorithm, ensure that all required dependencies are installed. A `environment.yml` file containing the necessary libraries is available in the `kMST/` folder. Navigate to the folder and create the Conda environment by running:
+```
+conda env create -f environment.yml
+```
+
+Once the installation is complete, activate the environment
+```
+conda activate env_sc
+```
+
+With the environment activated, you can execute the algorithm using the following code:
+
 ```
 python kMST.py <path_input> <path_output> <filter>
 ```

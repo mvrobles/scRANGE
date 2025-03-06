@@ -1,8 +1,7 @@
 import argparse
-import pickle
 import warnings
+warnings.filterwarnings('ignore')
 
-from glob import glob
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -15,9 +14,9 @@ import os
 
 import sys
 sys.path.append('../')
+
 from utils.read_data import get_paths, read_data_scexperiment
 
-warnings.filterwarnings('ignore')
 
 def normalize(adata, filter_min_counts=True, logtrans_input=True):
     """
@@ -200,7 +199,6 @@ def run_kmst(X: np.array,
     barcodes.to_csv(path_results + 'clusters.csv', index = False)
 
     return barcodes
-
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
