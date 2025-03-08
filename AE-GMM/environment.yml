@@ -1,4 +1,4 @@
-name: env_sc
+name: env_aegmm
 channels:
   - pytorch
   - nvidia

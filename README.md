@@ -41,6 +41,21 @@ python kMST.py "../Data/Simulated/symsim_500_1500_3_0.01_1000/" "../results/syms
 ```
 
 ### AE-GMM
+**Note:** A GPU is needed in order to excecute the AE-GMM neural network.
+
+To run the AE-GMM algorithm, ensure that all required dependencies are installed. A `environment.yml` file containing the necessary libraries is available in the `AE-GMM/` folder. Navigate to the folder and create the Conda environment by running:
+```
+conda env create -f environment.yml
+```
+
+
+Once the installation is complete, activate the environment
+```
+conda activate env_aegmm
+```
+
+With the environment activated, you can execute the algorithm using the following code:
+
 ```
 python NN_run_GMM.py <path_input> <path_output> <n_clusters>
 ```
@@ -52,8 +67,6 @@ Example:
 ```
 python NN_run_GMM.py "../Data/Simulated/symsim_500_1500_3_0.01_1000/" "../results/symsim_aegmm/" 3
 ```
-
-Each methodology contains the respective `environment.yaml` file for reference. 
 
 ## Data Availability
 The epilepsy dataset and the simulations made with the Symsim tool [2] can be found in the `Data` folder.
