@@ -11,7 +11,8 @@ Graph-based scRNA-seq clustering pipeline. a) Perform single-cell RNA sequencing
 Following the methodology of scDCC [1], the training of the network is performed in two stages. First, the autoencoder is pretrained with the $\mathcal{L}_{ZINB}$ loss function. Then, a fine-tuning stage is performed in which the latent representation is optimized, guided by the GMM loss function. The model learns the parameters of each Gaussian function at this stage to perform probabilistic clustering. Specifically, it learns three parameters: $\pi_c \in \mathbb{R}$, $\mu_c \in \mathbb{R}^{32}$, and $\Sigma_c \in \mathbb{R}^{32×32}$ for each cluster $c$. The value of $\mu_c$ represents the mean of the cluster $c$. These mean values are initialized as the centroids found by the k-Means algorithm. For each cluster $c$, $\Sigma_c$ represents the covariance matrix of c and πc represents its weight, which can be understood as the prior probability that a cell is assigned to such cluster. 
 
 ### Correlations
-
+![Correlations Algorithm](Diagrams/correlations.png)
+Cell type annotation using expression correlations. a) Obtain reference expression profiles for multiple cell types across tissues from the Human Protein Atlas. b) Obtain the gene-by-cell count matrix from the single-cell RNA-seq experiment. c) Compute a correlation matrix between each experimental cell and each reference cell type profile. d) Assign each cell in the experiment to the cell type with the highest correlation score.
 
 ## Usage
 ### k-MST
@@ -69,6 +70,20 @@ python NN_run_GMM.py <path_input> <path_output> <n_clusters>
 Example:
 ```
 python NN_run_GMM.py "../Data/Simulated/symsim_500_1500_3_0.01_1000/" "../results/symsim_aegmm/" 3
+```
+
+### Correlations 
+To run the correlation-based cell type annotation, you can use the same Conda environment created for the k-MST algorithm. With the environment activated, you can run the correlation script as follows:
+
+```
+python compute_correlations.py <path_input> <path_output> 
+```
+- `path_input`: Must be a folder with the scRNA-seq experiment containing a `matrix.mtx` file, a `barcodes.tsv` with the cell information and a `genes.tsv` with the gene information. 
+- `path_output`: Must be a folder. The results will be saved here.
+
+Example:
+```
+python compute_correlations.py "../Data/Non Simulated/PBMC/" "../results/PBMC_Correlations/"
 ```
 
 ## Data Availability
