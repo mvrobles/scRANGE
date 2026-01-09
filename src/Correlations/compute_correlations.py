@@ -183,6 +183,18 @@ def plot_results(results, path_results):
 
     plt.savefig(path_results + 'plot_result.png', dpi=600, bbox_inches='tight')
 
+def run_correlations(path_results, genes, barcodes, X):
+    genes = genes[genes.columns[1]].values
+    barcodes = barcodes[barcodes.columns[0]].values
+    
+    if not os.path.exists(path_results):
+        os.makedirs(path_results)
+
+    results = assign_cell_type(barcodes, genes, X)
+    results.to_csv(path_results+ 'results.csv')
+
+    plot_results(results, args.path_results)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("path_input")

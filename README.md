@@ -66,7 +66,13 @@ For the scRANGE algorithm, the number of clusters is required.
 uv python scRANGE.py ae-gmm <path_input> <path_output> --n_clusters <int>
 ```
 
-### 3. scDCC
+### 3. Correlations
+For the scRANGE algorithm, the only parameter needed is the input and output paths.
+```
+uv python scRANGE.py correlations <path_input> <path_output> 
+```
+
+### 4. scDCC
 scRANGE adapts [scDCC](https://github.com/ttgump/scDCC). The number of clusters is required. The algorithm supports other arguments from the original repository.
 ```
 uv python scRANGE.py scdcc <path_input> <path_output> --n_clusters <int> [options]
@@ -87,8 +93,6 @@ Following the methodology of scDCC [1], the training of the network is performed
 ### Correlations
 ![Correlations Algorithm](docs/correlations.png)
 Cell type annotation using expression correlations. a) Obtain reference expression profiles for multiple cell types across tissues from the Human Protein Atlas. b) Obtain the gene-by-cell count matrix from the single-cell RNA-seq experiment. c) Compute a correlation matrix between each experimental cell and each reference cell type profile. d) Assign each cell in the experiment to the cell type with the highest correlation score.
-
-
 
 ## References
 [1] Tian, T., Zhang, J., Lin, X., Wei, Z., Hakonarson, H.: Model-based deep embedding for constrained clustering analysis of single cell rna-seq data (2021) https: //doi.org/10.1038/s41467-021-22008-3 

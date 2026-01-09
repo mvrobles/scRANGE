@@ -4,6 +4,7 @@ from utils.read_data import get_paths, read_data_scexperiment
 from kMST.kMST import run_kmst
 from AE_GMM.NN_run_GMM import run_gmm
 from scDCC.scDCC_run import run_scdcc
+from correlations.compute_correlations import run_correlations
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -22,6 +23,11 @@ if __name__ == "__main__":
     aegmm_parser.add_argument("path_input")
     aegmm_parser.add_argument("path_results")
     aegmm_parser.add_argument("--n_clusters", type = int, required=True)
+    
+    # ---------- correlations ----------
+    aegmm_parser = subparsers.add_parser("correlations")
+    aegmm_parser.add_argument("path_input")
+    aegmm_parser.add_argument("path_results")
     
     # ---------- scdcc ----------
     scdcc_parser = subparsers.add_parser(
@@ -64,6 +70,11 @@ if __name__ == "__main__":
             barcodes = barcodes,
             path_results = args.path_results,
             n_clusters = args.n_clusters)
+    elif args.method == 'correlations':
+        run_correlations(path_results=args.path_results, 
+                         genes = genes, 
+                         barcodes = barcodes, 
+                         X = X)
     elif args.method == 'scdcc':
         run_scdcc(
             X=X,
