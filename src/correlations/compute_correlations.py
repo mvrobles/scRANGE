@@ -193,7 +193,7 @@ def run_correlations(path_results, genes, barcodes, X):
     results = assign_cell_type(barcodes, genes, X)
     results.to_csv(path_results+ 'results.csv')
 
-    plot_results(results, args.path_results)
+    plot_results(results, path_results)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
