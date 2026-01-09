@@ -14,7 +14,7 @@ from torch.autograd import Variable
 from torch.nn import Parameter
 from torch.utils.data import DataLoader, TensorDataset
 
-from layers import ClusteringLoss, DispAct, MeanAct, ZINBLoss
+from AE_GMM.layers import ClusteringLoss, DispAct, MeanAct, ZINBLoss
 
 def buildNetwork(layers, type, activation="relu"):
     net = []

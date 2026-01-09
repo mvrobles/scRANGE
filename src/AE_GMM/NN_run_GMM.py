@@ -13,8 +13,8 @@ from sklearn import metrics
 from sklearn.metrics import (calinski_harabasz_score, davies_bouldin_score,
                              silhouette_score)
 
-from NN_GMM import AEGMM
-from preprocess import normalize
+from AE_GMM.NN_GMM import AEGMM
+from AE_GMM.preprocess import normalize
 
 sys.path.append('../')
 from utils.read_data import get_paths, read_data_scexperiment
