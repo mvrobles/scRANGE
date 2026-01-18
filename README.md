@@ -43,7 +43,7 @@ path_input/
 ## Run the algorithms
 All algorithms are executed from the `src` directory using uv:
 ```
-uv python scRANGE.py <method> <path_input> <path_output> [options]
+uv run python scRANGE.py <method> <path_input> <path_output> [options]
 ```
 - `method`: Indicates the algorithm to be excecuted. Could be `kmst`, `ae-gmm` or `scdcc`
 - `path_input`: Must be a folder with the scRNA-seq experiment containing a `matrix.mtx` file, a `barcodes.tsv` with the cell information and a `genes.tsv` with the gene information. 
@@ -53,7 +53,7 @@ uv python scRANGE.py <method> <path_input> <path_output> [options]
 ### 1. kMST
 For the kMST algorithm, the type of gene filter is required.
 ```
-uv python scRANGE.py kmst <path_input> <path_output> --filter <filter>
+uv run python scRANGE.py kmst <path_input> <path_output> --filter <filter>
 ```
 Available filters:
 1. `"mean-variance"`: Select the 5000 genes with the largest difference between the actual variance and the expected variance.
@@ -63,7 +63,7 @@ Available filters:
 ### 2. AE-GMM
 For the scRANGE algorithm, the number of clusters is required.
 ```
-uv python scRANGE.py ae-gmm <path_input> <path_output> --n_clusters <int>
+uv run python scRANGE.py ae-gmm <path_input> <path_output> --n_clusters <int>
 ```
 
 ### 3. Correlations
@@ -75,7 +75,7 @@ uv python scRANGE.py correlations <path_input> <path_output>
 ### 4. scDCC
 scRANGE adapts [scDCC](https://github.com/ttgump/scDCC). The number of clusters is required. The algorithm supports other arguments from the original repository.
 ```
-uv python scRANGE.py scdcc <path_input> <path_output> --n_clusters <int> [options]
+uv run python scRANGE.py scdcc <path_input> <path_output> --n_clusters <int> [options]
 ```
 
 ## Data Availability
