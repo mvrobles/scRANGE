@@ -69,7 +69,7 @@ uv run python scRANGE.py ae-gmm <path_input> <path_output> --n_clusters <int>
 ### 3. Correlations
 For the scRANGE algorithm, the only parameter needed is the input and output paths.
 ```
-uv python scRANGE.py correlations <path_input> <path_output> 
+uv run python scRANGE.py correlations <path_input> <path_output> 
 ```
 
 ### 4. scDCC
