@@ -45,6 +45,9 @@ def create_train_model(params, adata, n_clusters):
         os.makedirs(params['path_results'])
 
     # Model
+    if n_clusters == 0:
+        n_clusters = None 
+
     model = AEGMM(input_dim=adata.n_vars, z_dim=32, n_clusters=n_clusters, 
                 encodeLayer=[256, 64], decodeLayer=[64, 256], sigma=2.5,
                 path = params['path_results']).cuda()
@@ -60,6 +63,24 @@ def create_train_model(params, adata, n_clusters):
 
     return model
 
+def estimate_number_clusters(model, adata):
+    """Estimate the number of clusters using the latent representation."""
+    # Convert data to tensor and move to GPU
+    X_tensor = torch.tensor(adata.X, dtype=torch.float32).cuda()
+    
+    # Get latent representation (no gradient needed)
+    with torch.no_grad():
+        X_latent, _, _, _, _ = model.forward(X_tensor)
+    
+    # Estimate number of clusters
+    n_clusters = model.estimate_n_clusters(X_latent)
+    
+    # Initialize clustering parameters
+    model.initialize_clustering_parameters(n_clusters)
+    
+    return n_clusters
+
+
 def second_training(params, model, adata):
     t0 = time()
     
@@ -68,16 +89,15 @@ def second_training(params, model, adata):
                                     sf=adata.obs.size_factors, batch_size=params['batch_size'],  num_epochs=params['maxiter'],
                                     update_interval=params['update_interval'], tol=params['tol'], lr = 0.001, y = None)
 
-    # Se guardan los resultados
+    # Save results
     pd.DataFrame(z.cpu().detach().numpy()).to_csv(params['path_results'] + 'Z.csv', index = None)
 
     print('Time: %d seconds.' % int(time() - t0))
 
     return distr, y_pred
 
-
 def unsupervised_metrics(X, y_pred):
-    # Evaluación final de resultados: métricas comparando con los clusters reales
+    # Final evaluation of results: metrics comparing with real clusters
     sil = np.round(silhouette_score(X, y_pred), 5)
     chs = np.round(calinski_harabasz_score(X, y_pred), 5)
     dbs = np.round(davies_bouldin_score(X, y_pred), 5)
@@ -90,35 +110,43 @@ def run_gmm(X: np.array,
     params = set_hyperparameters()
     params['path_results'] = path_results
 
-    # processing of scRNA-seq read counts matrix
+    # Processing of scRNA-seq read counts matrix
     anndata_p = sc.AnnData(X)
     anndata_p.obs = barcodes
 
-    # Normalize 
+    # Normalize data
     anndata_p = normalize(anndata_p)
     barcodes = anndata_p.obs
     x = anndata_p.X 
 
-    # Set k 
+    # Set number of clusters
     n_clusters = int(n_clusters)
 
-    # Model training
-    model = create_train_model(params, anndata_p, n_clusters)   
+    # Model training: pretrain autoencoder
+    model = create_train_model(params, anndata_p, n_clusters)
+    
+    # Estimate or initialize clustering parameters
+    if n_clusters == 0:
+        n_clusters = estimate_number_clusters(model, anndata_p)
+    else:
+        model.initialize_clustering_parameters(n_clusters)
+    
+    # Second training: clustering loss + ZINB loss
     distr, y_pred1 = second_training(params, model, anndata_p)
 
     print('----> Unsupervised metrics for GMM Autoencoder:')
     unsupervised_metrics(x, y_pred1)
 
-    # Guardar resultados
+    # Save results
     barcodes['cluster'] = y_pred1
     barcodes.to_csv(path_results + 'gmm_clusters.csv', index = False)
-    print(f'-----> Se guardó correctamente el csv {path_results}')
+    print(f'Results saved to {path_results}')
 
     for i in range(n_clusters):
         barcodes["prob_cluster" + str(i)] = distr[:,i]
         
     barcodes.to_csv(path_results + 'gmm_clusters_prob.csv', index = False)
-    print(f'-----> Se guardó correctamente el csv con la distribución de probabilidad {path_results}')
+    print(f'Probability distribution saved to {path_results}')
 
     distr = distr / distr.sum(axis=1, keepdims=True)
     
