@@ -266,6 +266,8 @@ class AEGMM(nn.Module):
         clusters = pd.read_csv(temp_path + "clusters.csv")["cluster"]
         n_clusters = len(set(clusters))
 
+        print(f"Number of clusters: {n_clusters}")
+
         self.n_clusters = n_clusters
         shutil.rmtree(temp_path)
         return n_clusters
