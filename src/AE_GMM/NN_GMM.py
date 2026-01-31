@@ -96,6 +96,23 @@ class AEGMM(nn.Module):
         h0 = self.encoder(x)
         z0 = self._enc_mu(h0)
 
+        # If clustering parameters are not yet initialized, return a
+        # safe default probability matrix (uniform across clusters if
+        # number of clusters is known, otherwise a single-column zeros
+        # tensor). This prevents forward from raising during pretraining
+        # or encoding steps before clustering initialization.
+        if self.mu is None or self.cov is None:
+            batch_size = z0.size(0)
+            if self.n_clusters is None or self.n_clusters <= 0:
+                # Unknown number of clusters: return a single-column zeros tensor
+                prob_matrix = torch.zeros(batch_size, 1, dtype=torch.float32, device=z0.device)
+            else:
+                # Known number of clusters: return uniform probabilities
+                prob_matrix = torch.ones(batch_size, self.n_clusters, dtype=torch.float32, device=z0.device)
+                prob_matrix = prob_matrix / prob_matrix.sum(dim=1, keepdim=True)
+
+            return z0, _mean, _disp, _pi, prob_matrix
+
         prob_matrix = self.find_probabilities(z0)
         return z0, _mean, _disp, _pi, prob_matrix
 
