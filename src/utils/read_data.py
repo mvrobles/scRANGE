@@ -21,6 +21,14 @@ def read_tsv(file):
         df = pd.read_csv(f, sep='\t', header=None)
     return df
 
+def read_csv(file):
+    """
+    Reads a .csv file and returns a DataFrame.
+    """
+    with open(file, 'r') as f:
+        df = pd.read_csv(f, header=None)
+    return df
+
 def read_mtx_gz(file) -> csc_matrix:
     """
     Reads a .mtx file and returns a sparse matrix.

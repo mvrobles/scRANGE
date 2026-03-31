@@ -4,6 +4,8 @@ from sklearn import metrics
 from sklearn.decomposition import PCA
 from scipy.optimize import linear_sum_assignment
 from sklearn.metrics import (calinski_harabasz_score, davies_bouldin_score, silhouette_score)
+import argparse
+from read_data import read_csv
 
 def unsupervised_metrics(X, y_pred):
     # Realizamos PCA a 32 componentes
@@ -59,3 +61,14 @@ def cluster_acc(y_true, y_pred):
     ind = np.transpose(ind)
 
     return sum([w[i, j] for i, j in ind]) * 1.0 / y_pred.size
+    
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("gs_labels")
+    parser.add_argument("test_labels")
+    args = parser.parse_args()
+    y_true = read_csv(args.gs_labels)
+    y_pred = read_csv(args.test_labels)
+    metrics = supervised_metrics(y_true.iloc[:, 1],y_pred.iloc[:, 1])
+    print ("ACC: "+str(metrics["acc"])+" NMI: "+str(metrics["nmi"])+" ARI: "+str(metrics["ari"]))
+    

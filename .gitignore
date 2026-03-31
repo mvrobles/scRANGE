@@ -3,3 +3,4 @@ revision/*
 results/*
 *.pyc
 *__pycache__/*
+/bin/
