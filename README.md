@@ -61,7 +61,8 @@ Available filters:
 3. `""`: No gene selection. 
 
 ### 2. AE-GMM
-For the scRANGE algorithm, the number of clusters is required.
+The AE-GMM algorithm can be executed with a specific number of clusters as shown below.
+If not provided, the k-MST algorithm is executed on the latent space to guess the number of clusters
 ```
 uv run python scRANGE.py ae-gmm <path_input> <path_output> --n_clusters <int>
 ```
@@ -94,10 +95,12 @@ Following the methodology of scDCC [1], the training of the network is performed
 ![Correlations Algorithm](docs/correlations.png)
 Cell type annotation using expression correlations. a) Obtain reference expression profiles for multiple cell types across tissues from the Human Protein Atlas. b) Obtain the gene-by-cell count matrix from the single-cell RNA-seq experiment. c) Compute a correlation matrix between each experimental cell and each reference cell type profile. d) Assign each cell in the experiment to the cell type with the highest correlation score.
 
-## References
-[1] Tian, T., Zhang, J., Lin, X., Wei, Z., Hakonarson, H.: Model-based deep embedding for constrained clustering analysis of single cell rna-seq data (2021) https: //doi.org/10.1038/s41467-021-22008-3 
+## Citing
+To refer to scRANGE, please cite:
 
-[2] Zhang, X., Xu, C. & Yosef, N. Simulating multiple faceted variability in single cell RNA sequencing. Nat Commun 10, 2611 (2019). https://doi.org/10.1038/s41467-019-10500-w
+
+Robles M, Díaz-Riaño J, Forigua C, Ojeda S, Guio L, Siaucho P, Guzman-Porras J, García-Orjuela D, Naranjo A, Maradei S, Quiroz A, Duitama J. New algorithms for unsupervised cell clustering from scRNA-seq data. Bioinformatics Advances 6 (1): vbag121, 2026. https://doi.org/10.1093/bioadv/vbag121
+
 
 ## Contact
 Melissa Robles mv.robles@uniandes.edu.co
