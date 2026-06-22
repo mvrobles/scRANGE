@@ -4,3 +4,5 @@ results/*
 *.pyc
 *__pycache__/*
 /bin/
+/.classpath
+/.project
